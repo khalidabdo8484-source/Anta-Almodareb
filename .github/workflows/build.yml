@@ -15,11 +15,12 @@ jobs:
       - name: Fix Gradle and Build
         run: |
           cp lib/main.dart /tmp/main.dart
-          cp pubspec.yaml /tmp/pubspec.yaml
           rm -rf android
           flutter create -t app --project-name anta_almodareb --platforms android .
           cp /tmp/main.dart lib/main.dart
-          cp /tmp/pubspec.yaml pubspec.yaml
+          echo "flutter.minSdkVersion=21" >> android/local.properties
+          echo "flutter.compileSdkVersion=34" >> android/local.properties
+          echo "flutter.ndkVersion=27.0.120" >> android/local.properties
           flutter clean
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
