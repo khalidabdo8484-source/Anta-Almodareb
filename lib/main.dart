@@ -1,224 +1,225 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
-  Widget build(BuildContext c) {
-    return MaterialApp(
+  Widget build(BuildContext context) {
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const MainMenu());
+      home: MainMenu(),
+    );
   }
 }
 
-class Skin {
-  String name, emoji; Color color;
-  double speed; int price; bool owned;
-  Skin(this.name,this.emoji,this.color,
-  this.speed,this.price,{this.owned=false});
-}
-class LevelData {
-  String name, emoji, desc;
-  Color street, building; double traffic;
-  LevelData(this.name,this.emoji,this.desc,
-  this.street,this.building,this.traffic);
+// بيانات اللاعب
+class Player {
+  String name;
+  String emoji;
+  int power;
+  int level;
+  Player(this.name, this.emoji, this.power, this.level);
 }
 
-class MainMenu extends StatefulWidget{
+class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
-  @override State<MainMenu> createState()=>_MainMenuState();
-}
-class _MainMenuState extends State<MainMenu>{
-  int coins=500, high=0, selSkin=0, selLevel=0;
-  List<Skin> skins=[
-    Skin('العادي','🛺',Colors.yellow,1.0,0,owned:true),
-    Skin('عنتيل','🛺',Colors.red,1.2,1500),
-    Skin('الطيارة','🚀',Colors.cyan,1.7,9000),
-  ];
-  List<LevelData> levels=[
-    LevelData('الحارة','🏘️','سهلة',
-    const Color(0xFF8D6E63),
-    const Color(0xFFD7CCC8),0.02),
-    LevelData('الدائري','🛣️','صعبة',
-    const Color(0xFF212121),
-    const Color(0xFF616161),0.06),
-  ];
-  @override void initState(){
-    super.initState(); _load();
-  }
-  _load() async{
-    var p=await SharedPreferences.getInstance();
-    setState((){
-      coins=p.getInt('coins')??500;
-      high=p.getInt('tok_high')??0;
-    });
-  }
-  _save() async{
-    var p=await SharedPreferences.getInstance();
-    p.setInt('coins',coins);
-    p.setInt('tok_high',high);
-  }
-  @override Widget build(BuildContext c){
-    return Scaffold(body: Container(
-      decoration:const BoxDecoration(
-        gradient:LinearGradient(
-          colors:[Color(0xFFFF9800),Color(0xFFFF5722)])),
-      child: SafeArea(child: Column(children:[
-        const SizedBox(height:10),
-        Row(mainAxisAlignment:MainAxisAlignment.spaceAround,
-        children:[_chip('💰 $coins'), _chip('🏆 $high')]),
-        const Text('🛺 سواق التوكتوك 🛺',
-          style:TextStyle(fontSize:30,
-          fontWeight:FontWeight.w900,color:Colors.white)),
-        Expanded(child: ListView(
-          padding:const EdgeInsets.all(16), children:[
-          ElevatedButton(onPressed:(){
-            Navigator.push(c, MaterialPageRoute(
-              builder:(_)=>GameScreen(
-                skin:skins[selSkin],
-                level:levels[selLevel],
-                levelIndex:selLevel,
-                onFinish:(sc,earned){
-                  setState((){
-                    coins+=earned;
-                    if(sc>high) high=sc;
-                  }); _save();
-                })));
-          },
-          style:ElevatedButton.styleFrom(
-            backgroundColor:Colors.black,
-            padding:const EdgeInsets.symmetric(vertical:18)),
-          child:const Text('يلا نطلع مصلحة 🛺💨',
-            style:TextStyle(color:Colors.white, fontSize:20))),
-        ])),
-      ]))));
-  }
-  Widget _chip(String t)=>Container(
-    padding:const EdgeInsets.symmetric(horizontal:14,vertical:6),
-    decoration:BoxDecoration(
-      color:Colors.black87,
-      borderRadius:BorderRadius.circular(20)),
-    child:Text(t,
-      style:const TextStyle(color:Colors.white)));
+  @override
+  State<MainMenu> createState() => _MainMenuState();
 }
 
-class GameObj{
-  double x,y; String type; double speed;
-  GameObj(this.x,this.y,this.type,this.speed);
-}
-class GameScreen extends StatefulWidget{
-  final Skin skin; final LevelData level;
-  final int levelIndex;
-  final Function(int,int) onFinish;
-  const GameScreen({super.key,
-    required this.skin, required this.level,
-    required this.levelIndex, required this.onFinish});
-  @override State<GameScreen> createState()=>_GameScreenState();
-}
-class _GameScreenState extends State<GameScreen>{
-  double toktokX=0.5, fuel=100;
-  int score=0, lives=3, coinsEarned=0;
-  double gameSpeed=4;
-  bool left=false,right=false;
-  List<GameObj> objs=[];
-  Timer? loop; Random rnd=Random();
+class _MainMenuState extends State<MainMenu> {
+  int coins = 1000;
+  int trophies = 0;
+  int teamPower = 45;
+  int selectedFormation = 0;
 
-  @override void initState(){
-    super.initState();
-    loop=Timer.periodic(
-      const Duration(milliseconds:16),(_){
-      if(!mounted) return;
-      setState((){
-        if(left && toktokX>0.08)
-          toktokX-=0.018*widget.skin.speed;
-        if(right && toktokX<0.92)
-          toktokX+=0.018*widget.skin.speed;
-        fuel-=0.04;
-        if(fuel<=0){_over('البنزين خلص!'); return;}
-        for(var o in objs) o.y+=o.speed;
-        objs.removeWhere((o)=>o.y>110);
-        if(rnd.nextDouble()<widget.level.traffic){
-          objs.add(GameObj(
-            rnd.nextDouble()*0.8+0.1, -10, 'car', gameSpeed));
-        }
-        for(var o in List.from(objs)){
-          if((o.x-toktokX).abs()<0.13 &&
-            (o.y-85).abs()<8){
-            objs.remove(o);
-            if(o.type=='car'){
-              lives--;
-              if(lives<=0) _over('عملت حادثة!');
-            } else {
-              score+=20; coinsEarned+=10;
-            }
-          }
-        }
-        score++;
-      });
+  List<String> formations = ['4-4-2', '4-3-3', '3-5-2'];
+
+  List<Player> myTeam = [
+    Player('الحارس', '🧤', 50, 1),
+    Player('الدفاع', '🛡️', 48, 1),
+    Player('الوسط', '⚙️', 52, 1),
+    Player('الهجوم', '⚽', 55, 1),
+  ];
+
+  void trainPlayer(int index) {
+    if (coins < 100) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('فلوسك مش كفاية!')),
+      );
+      return;
+    }
+    setState(() {
+      coins -= 100;
+      myTeam[index].power += 5;
+      myTeam[index].level += 1;
+      teamPower = myTeam.fold(0, (s, p) => s + p.power) ~/ myTeam.length;
     });
   }
-  void _over(String r){
-    loop?.cancel();
-    widget.onFinish(score,coinsEarned);
-    showDialog(context:context,
-      barrierDismissible:false,
-      builder:(c)=>AlertDialog(
-        title:Text(r),
-        content:Text('كسبت $coinsEarned'),
-        actions:[ElevatedButton(
-          onPressed:(){
-            Navigator.pop(c);
-            Navigator.pop(context);
-          },
-          child:const Text('تمام'))]));
+
+  void playMatch() {
+    int enemyPower = 40 + Random().nextInt(40);
+    bool win = teamPower > enemyPower;
+    int reward = win? 300 : 50;
+
+    showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(win? 'فزت! 🎉' : 'خسرت 😢'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('قوة فريقك: $teamPower'),
+            Text('قوة الخصم: $enemyPower'),
+            const SizedBox(height: 10),
+            Text(win? 'كسبت $reward كوين!' : 'حاول تاني، كسبت $reward'),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                coins += reward;
+                if (win) trophies++;
+              });
+              Navigator.pop(c);
+            },
+            child: const Text('تمام'),
+          )
+        ],
+      ),
+    );
   }
-  @override void dispose(){
-    loop?.cancel(); super.dispose();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D4F2B),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // الهيدر
+            Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.black87,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _chip('💰 $coins'),
+                  _chip('🏆 $trophies'),
+                  _chip('💪 $teamPower'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              '⚽ أنت المدرب ⚽',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              'خطة: ${formations[selectedFormation]}',
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 15),
+
+            // التشكيلة
+            SizedBox(
+              height: 50,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: formations.length,
+                itemBuilder: (c, i) {
+                  bool sel = i == selectedFormation;
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedFormation = i),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: sel? Colors.amber : Colors.white24,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Text(
+                          formations[i],
+                          style: TextStyle(
+                            color: sel? Colors.black : Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            // فريقي
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: myTeam.length,
+                itemBuilder: (c, i) {
+                  var p = myTeam[i];
+                  return Card(
+                    child: ListTile(
+                      leading: Text(p.emoji, style: const TextStyle(fontSize: 30)),
+                      title: Text('${p.name} - لفل ${p.level}'),
+                      subtitle: LinearProgressIndicator(
+                        value: p.power / 100,
+                        color: Colors.green,
+                      ),
+                      trailing: ElevatedButton(
+                        onPressed: () => trainPlayer(i),
+                        child: const Text('درب 100💰'),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // زر الماتش
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: playMatch,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                  ),
+                  child: const Text(
+                    'العب الماتش ⚽🔥',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
-  @override Widget build(BuildContext context){
-    var w=MediaQuery.of(context).size.width;
-    return Scaffold(body: Stack(children:[
-      Container(color:widget.level.building),
-      Positioned.fill(child: CustomPaint(
-        painter: RoadPainter(
-          streetColor: widget.level.street))),
-      for(var o in objs) Positioned(
-        left:w*o.x-20,
-        top:MediaQuery.of(context).size.height*o.y/100,
-        child:const Text('🚗',
-          style:TextStyle(fontSize:30))),
-      Positioned(
-        left:w*toktokX-30, bottom:110,
-        child: Text(widget.skin.emoji,
-          style:const TextStyle(fontSize:48))),
-      Positioned(left:0, bottom:0, top:0, width:w*0.5,
-        child: GestureDetector(
-          onTapDown:(_)=>left=true,
-          onTapUp:(_)=>left=false,
-          onTapCancel:()=>left=false)),
-      Positioned(right:0, bottom:0, top:0, width:w*0.5,
-        child: GestureDetector(
-          onTapDown:(_)=>right=true,
-          onTapUp:(_)=>right=false,
-          onTapCancel:()=>right=false)),
-      Positioned(top:40, left:10,
-        child: Text('❤️'*lives)),
-      Positioned(top:40, right:10,
-        child: Text('⛽ ${fuel.toStringAsFixed(0)}%')),
-    ]));
+
+  Widget _chip(String t) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white24,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(t, style: const TextStyle(color: Colors.white)),
+    );
   }
-}
-class RoadPainter extends CustomPainter{
-  final Color streetColor;
-  RoadPainter({required this.streetColor});
-  @override void paint(Canvas c, Size s){
-    var p=Paint()..color=streetColor;
-    c.drawRect(
-      Rect.fromLTWH(s.width*0.12,0,s.width*0.76,s.height),p);
-  }
-  @override bool shouldRepaint(c)=>false;
 }
