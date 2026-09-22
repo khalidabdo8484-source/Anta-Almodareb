@@ -14,7 +14,7 @@ jobs:
           flutter-version: '3.22.0'
       - name: Fix Gradle Project
         run: |
-          flutter create. --project-name anta_almodareb --org com.anta.modareb --platforms android
+          flutter create . --project-name anta_almodareb --org com.anta.modareb --platforms android
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
