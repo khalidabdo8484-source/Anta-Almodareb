@@ -9,18 +9,32 @@ class AntaAlModarebApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF0F1420)),
-      home: const Directionality(textDirection: TextDirection.rtl, child: HomeScreen()),
+      home: const Directionality(textDirection: TextDirection.rtl, child: MainGame()),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-  @override State<HomeScreen> createState() => _HomeScreenState();
+class MainGame extends StatefulWidget {
+  const MainGame({super.key});
+  @override State<MainGame> createState() => _MainGameState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int currentIndex = 5;
+class _MainGameState extends State<MainGame> {
+  int navIndex = 0;
+  String formation = "4-3-3";
+  String selectedLeague = "الدوري المصري";
+
+  final leagues = {
+    "الدوري المصري": [
+      ["1", "الأهلي", "38", "85"], ["2", "بيراميدز", "38", "78"], ["3", "الزمالك", "38", "72"], ["4", "المصري", "38", "60"], ["5", "مودرن", "38", "55"]
+    ],
+    "الدوري الإنجليزي": [
+      ["1", "Man City", "38", "91"], ["2", "Arsenal", "38", "89"], ["3", "Liverpool", "38", "82"], ["4", "Chelsea", "38", "71"], ["5", "Man Utd", "38", "68"]
+    ],
+    "دوري الأبطال": [
+      ["1", "Real Madrid", "6", "15"], ["2", "Man City", "6", "12"], ["3", "Bayern", "6", "12"], ["4", "الأهلي", "6", "9"], ["5", "Inter", "6", "8"]
+    ],
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -28,204 +42,100 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar زي الصورة بالظبط
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  _topIcon(Icons.shield, hasLogo: true),
-                  const SizedBox(width: 6),
-                  _topBadgeGreen("الخزينة\n15246.0k ج.م", Icons.account_balance_wallet),
-                  const SizedBox(width: 6),
-                  _topBadgeOrange("المستوى 11\n100", Icons.star),
-                  const SizedBox(width: 6),
-                  _topIcon(Icons.notifications_none),
-                  const SizedBox(width: 6),
-                  _topIcon(Icons.keyboard_arrow_down, bg: Color(0xFF0E4D3A)),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(12),
-                children: [
-                  // كارت فيسبوك
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E2740),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3))
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(color: const Color(0xFF2A3558), borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.chat_bubble_outline, color: Colors.blueAccent),
-                            ),
-                            const SizedBox(width: 10),
-                            const Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("تابع صفحة أنت المدرب على فيسبوك", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  SizedBox(height: 4),
-                                  Text("خليك أول واحد يعرف التحديثات والبطولات والأخبار...", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(color: const Color(0xFF2A3558), borderRadius: BorderRadius.circular(20)),
-                              child: const Text("مجتمع اللعبة", style: TextStyle(fontSize: 11, color: Colors.blueAccent)),
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3A5BFF), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.symmetric(vertical: 12)),
-                            onPressed: (){}, icon: const Icon(Icons.open_in_new, size: 18), label: const Text("تابعنا على فيسبوك"),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // كارت التاريخ والمباراة
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(20)),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF0E4D3A), borderRadius: BorderRadius.circular(8)), child: const Text("الموسم 7", style: TextStyle(fontSize: 12))),
-                                const SizedBox(width: 8),
-                                const Text("الأحد 22 أغسطس 2032", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                              ],
-                            ),
-                            Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF2A3558), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.calendar_today_outlined, color: Colors.cyanAccent)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text("باقي 7 أيام على خوض الجولة 3", style: TextStyle(color: Colors.grey[400], fontSize: 13)),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2A3558), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                                onPressed: (){}, icon: const Icon(Icons.timer_outlined, size: 18), label: const Text("اليوم التالي (1+)"),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                                onPressed: (){},
-                                child: const Text("تخطي سريع\nلموعد المباراة ⏩", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Colors.white12),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("كثافة الحصص التدريبية اليومية:", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                            Row(children: [
-                              _trainChip("استشفاء خفيف", false),
-                              const SizedBox(width: 6),
-                              _trainChip("متوازن وعادي", true),
-                              const SizedBox(width: 6),
-                              _trainChip("شاق ومكثف 🔥", false),
-                            ])
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(16)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(20)), child: const Text("🏟️ في ملعبنا")),
-                        const Text("الجولة 3 من 43", style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-
-            // Bottom Nav زي الصورة
-            Container(
-              color: const Color(0xFF1A2238),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _navItem(Icons.grid_view, "الرئيسية", true),
-                  _navItem(Icons.tune, "التكتيك", false),
-                  _navItem(Icons.sports, "المباريات", false),
-                  _navItem(Icons.groups, "التشكيلة", false),
-                  _navItem(Icons.emoji_events_outlined, "الدوري", false),
-                  _navItem(Icons.more_horiz, "المزيد", false),
-                ],
-              ),
-            )
+            _topBar(),
+            Expanded(child: _getPage()),
+            _bottomNav(),
           ],
         ),
       ),
     );
   }
 
-  Widget _topBadgeOrange(String text, IconData icon) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(color: const Color(0xFF3B2110), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.withOpacity(0.3))),
-    child: Row(children: [const Icon(Icons.star, color: Colors.amber, size: 18), const SizedBox(width: 4), Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold))]),
+  Widget _topBar() => Padding(
+    padding: const EdgeInsets.all(8),
+    child: Row(children: [
+      Container(padding: const EdgeInsets.all(10), decoration: const BoxDecoration(color: Color(0xFF1E2740), shape: BoxShape.circle), child: const Icon(Icons.shield, size: 18)),
+      const SizedBox(width: 6),
+      _badge("الخزينة\n15246.0k ج.م", Colors.greenAccent, const Color(0xFF12332B)),
+      const SizedBox(width: 6),
+      _badge("المستوى 11\n100 ⭐", Colors.amber, const Color(0xFF3B2110)),
+      const Spacer(),
+      Container(padding: const EdgeInsets.all(10), decoration: const BoxDecoration(color: Color(0xFF1E2740), shape: BoxShape.circle), child: const Icon(Icons.notifications_none, size: 18)),
+    ]),
   );
 
-  Widget _topBadgeGreen(String text, IconData icon) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(color: const Color(0xFF12332B), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green.withOpacity(0.3))),
-    child: Row(children: [const Icon(Icons.account_balance_wallet_outlined, color: Colors.greenAccent, size: 16), const SizedBox(width: 4), Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold))]),
-  );
+  Widget _badge(String t, Color c, Color bg) => Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)), child: Text(t, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: c)));
 
-  Widget _topIcon(IconData icon, {bool hasLogo=false, Color bg=const Color(0xFF1E2740)}) => Container(
-    padding: const EdgeInsets.all(10),
-    decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-    child: Icon(icon, size: 18),
-  );
+  Widget _getPage() {
+    if (navIndex == 0) return _homePage();
+    if (navIndex == 1) return _tacticsPage();
+    if (navIndex == 2) return _matchesPage();
+    if (navIndex == 3) return _squadPage();
+    if (navIndex == 4) return _leaguePage();
+    return _morePage();
+  }
 
-  Widget _trainChip(String text, bool selected) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(color: selected? const Color(0xFF0E4D3A) : const Color(0xFF2A3558), borderRadius: BorderRadius.circular(8), border: selected? Border.all(color: Colors.greenAccent) : null),
-    child: Text(text, style: TextStyle(fontSize: 11, color: selected? Colors.greenAccent : Colors.grey)),
-  );
+  // الصفحة الرئيسية - نفس الصورة بتاعتك
+  Widget _homePage() => ListView(padding: const EdgeInsets.all(12), children: [
+    Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(20)), child: Column(children: [
+      const Row(children: [Icon(Icons.calendar_today, color: Colors.cyanAccent, size: 18), SizedBox(width: 8), Text("الأحد 22 أغسطس 2032 - الموسم 7", style: TextStyle(fontWeight: FontWeight.bold))]),
+      const SizedBox(height: 10),
+      Text("باقي 7 أيام على خوض الجولة 3", style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+      const SizedBox(height: 12),
+      Row(children: [
+        Expanded(child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2A3558)), onPressed: (){setState(()=>navIndex=2);}, child: const Text("عرض المباريات"))),
+        const SizedBox(width: 10),
+        Expanded(child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.black), onPressed: (){}, child: const Text("تخطي للمباراة ⏩", style: TextStyle(fontWeight: FontWeight.bold)))),
+      ])
+    ])),
+    const SizedBox(height: 12),
+    Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(16)), child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("🏟️ في ملعبنا"), Text("الجولة 3 من 43", style: TextStyle(color: Colors.orangeAccent))])),
+  ]);
 
-  Widget _navItem(IconData icon, String label, bool selected) => Column(
-    children: [
-      Icon(icon, color: selected? Colors.greenAccent : Colors.grey, size: 24),
-      Text(label, style: TextStyle(fontSize: 10, color: selected? Colors.greenAccent : Colors.grey)),
-      if(selected) Container(margin: const EdgeInsets.only(top: 2), height: 3, width: 20, decoration: BoxDecoration(color: Colors.greenAccent, borderRadius: BorderRadius.circular(2)))
-    ],
-  );
-}
+  Widget _tacticsPage() => ListView(padding: const EdgeInsets.all(16), children: [
+    const Text("اختر الخطة", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+    const SizedBox(height: 12),
+    Wrap(spacing: 8, children: ["4-3-3", "4-4-2", "3-5-2", "4-2-3-1"].map((f) => ChoiceChip(label: Text(f), selected: formation==f, onSelected: (v){setState(()=>formation=f);}, selectedColor: const Color(0xFF0E4D3A))).toList()),
+    const SizedBox(height: 20),
+    const Text("أسلوب اللعب", style: TextStyle(fontWeight: FontWeight.bold)),
+    const SizedBox(height: 8),
+    _tacticTile("هجوم ضاغط 🔥", "ضغط عالي واستحواذ"),
+    _tacticTile("متوازن", "دفاع وهجوم متوازن"),
+    _tacticTile("دفاع وركنيات", "ركن الباص والمرتدات"),
+  ]);
+
+  Widget _tacticTile(String title, String sub) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(12)), child: ListTile(title: Text(title), subtitle: Text(sub, style: const TextStyle(fontSize: 11, color: Colors.grey)), trailing: const Icon(Icons.check_circle_outline)));
+
+  Widget _matchesPage() => ListView(padding: const EdgeInsets.all(12), children: [
+    for(int i=0; i<5; i++) Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(14)), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(i==0? "الأهلي" : "الزمالك", style: const TextStyle(fontWeight: FontWeight.bold)), Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF2A3558), borderRadius: BorderRadius.circular(8)), child: Text(i==0? "اليوم" : "${i+1} أيام", style: const TextStyle(fontSize: 12))), Text(i==0? "بيراميدز" : "المصري")])),
+  ]);
+
+  Widget _squadPage() {
+    List<String> players = formation=="4-3-3"? ["حارس", "دفاع", "دفاع", "دفاع", "دفاع", "وسط", "وسط", "وسط", "هجوم", "هجوم", "هجوم"] : ["حارس", "دفاع", "دفاع", "وسط", "وسط", "وسط", "وسط", "هجوم", "هجوم"];
+    return Column(children: [
+      Padding(padding: const EdgeInsets.all(12), child: Text("التشكيلة: $formation", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+      Expanded(child: Container(margin: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF1B5E20), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white24)), child: GridView.count(crossAxisCount: 3, padding: const EdgeInsets.all(12), children: players.map((p) => Card(color: const Color(0xFF1E2740), child: Center(child: Text(p)))).toList()))),
+    ]);
+  }
+
+  Widget _leaguePage() => Column(children: [
+    SingleChildScrollView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.all(8), child: Row(children: leagues.keys.map((l) => Padding(padding: const EdgeInsets.only(left: 6), child: ChoiceChip(label: Text(l), selected: selectedLeague==l, onSelected: (v){setState(()=>selectedLeague=l);})) ).toList())),
+    Expanded(child: Container(margin: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF1E2740), borderRadius: BorderRadius.circular(16)), child: ListView(children: [
+      const Padding(padding: EdgeInsets.all(12), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("#"), Text("الفريق"), Text("لعب"), Text("نقط")])),
+      const Divider(color: Colors.white12),
+     ...leagues[selectedLeague]!.map((row) => Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(row[0]), Expanded(child: Text(row[1], textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold))), Text(row[2]), Text(row[3], style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold))]))).toList()
+    ]))),
+  ]);
+
+  Widget _morePage() => ListView(padding: const EdgeInsets.all(16), children: [for(var t in ["الانتقالات", "المالية", "الإعدادات", "المتجر"]) ListTile(title: Text(t), trailing: const Icon(Icons.arrow_forward_ios, size: 14), tileColor: const Color(0xFF1E2740), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))) ]);
+
+  Widget _bottomNav() => Container(color: const Color(0xFF1A2238), padding: const EdgeInsets.symmetric(vertical: 6), child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+    _navBtn(Icons.grid_view, "الرئيسية", 0),
+    _navBtn(Icons.tune, "التكتيك", 1),
+    _navBtn(Icons.sports, "المباريات", 2),
+    _navBtn(Icons.groups, "التشكيلة", 3),
+    _navBtn(Icons.emoji_events, "الدوري", 4),
+    _navBtn(Icons.more_horiz, "المزيد", 5),
+  ]));
+
+  Widget _navBtn(IconData icon, String label, int index) => GestureDetector(on
