@@ -1,4 +1,4 @@
-name: Rakna Build
+name: Rakna Free Build
 on: [push, workflow_dispatch]
 jobs:
   build:
@@ -13,12 +13,10 @@ jobs:
         with:
           flutter-version: '3.22.2'
           channel: 'stable'
-      - name: Fix and Build
-        run: |
+      - run: |
           rm -rf android
           flutter create -t app . --org com.rakna.app --project-name rakna --platforms android --overwrite
-          cat > pubspec.yaml << 'EOF'
-          name: rakna
+          echo "name: rakna
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -26,28 +24,25 @@ jobs:
           dependencies:
             flutter:
               sdk: flutter
-            google_maps_flutter: 2.5.0
+            flutter_map: 6.1.0
+            latlong2: 0.8.1
           flutter:
-            uses-material-design: true
-          EOF
-          cat > lib/main.dart << 'DART'
-          import 'package:flutter/material.dart';
-          import 'package:google_maps_flutter/google_maps_flutter.dart';
+            uses-material-design: true" > pubspec.yaml
+          echo "import 'package:flutter/material.dart';
+          import 'package:flutter_map/flutter_map.dart';
+          import 'package:latlong2/latlong.dart';
           import 'dart:async'; import 'dart:math';
           void main()=>runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: Rakna()));
-          class Rakna extends StatefulWidget{const Rakna({super.key}); @override State<Rakna> createState()=> _RaknaState(); }
-          class _RaknaState extends State<Rakna>{
-            LatLng myPos=const LatLng(30.0626,31.2194); List<Marker> markers=[]; int points=12; int countdown=120; Timer? timer; String? reservedId;
-            @override void initState(){super.initState(); _loadSpots();}
-            void _loadSpots(){ var rnd=Random(); List<Marker> m=[]; m.add(Marker(markerId: const MarkerId('me'), position: myPos, infoWindow: const InfoWindow(title: 'انت هنا'))); for(int i=0;i<3;i++){ var p=LatLng(myPos.latitude+(rnd.nextDouble()-0.5)*0.006, myPos.longitude+(rnd.nextDouble()-0.5)*0.006); m.add(Marker(markerId: MarkerId('spot_$i'), position: p, icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), infoWindow: InfoWindow(title: 'ركنة هتفضى 🟢', snippet: 'دوس للحجز', onTap: (){ _reserve('spot_$i'); }))); } setState(()=>markers=m); }
-            void _reserve(String id){ setState(()=>reservedId=id); countdown=120; timer?.cancel(); timer=Timer.periodic(const Duration(seconds:1), (t){ if(countdown>0){ setState(()=>countdown--);} else { t.cancel(); setState(()=>reservedId=null); } }); }
-            void _confirmPark(){ timer?.cancel(); setState((){ points+=2; reservedId=null; }); _loadSpots(); }
-            @override Widget build(BuildContext context){ return Scaffold(body: Stack(children:[ GoogleMap(initialCameraPosition: CameraPosition(target: myPos, zoom: 16), markers: Set.from(markers)), SafeArea(child: Container(margin:const EdgeInsets.all(16), padding:const EdgeInsets.all(12), decoration:BoxDecoration(color:Colors.black, borderRadius:BorderRadius.circular(16)), child:Row(mainAxisAlignment:MainAxisAlignment.spaceBetween, children:[ Text(reservedId!=null?'${countdown~/60}:${(countdown%60).toString().padLeft(2,'0')}':'ركنة - WORKFLOW', style:const TextStyle(color:Colors.white, fontWeight:FontWeight.bold)), Container(padding:const EdgeInsets.symmetric(horizontal:10, vertical:6), decoration:BoxDecoration(color:Colors.white, borderRadius:BorderRadius.circular(20)), child: Text('$points نقطة', style:const TextStyle(fontWeight:FontWeight.bold)))]))), Positioned(bottom:0, left:0, right:0, child: Container(padding:const EdgeInsets.all(20), decoration:const BoxDecoration(color:Colors.white, borderRadius:BorderRadius.vertical(top:Radius.circular(24))), child: reservedId==null?Column(children:[ SizedBox(width:double.infinity, height:56, child:ElevatedButton(onPressed:_loadSpots, style:ElevatedButton.styleFrom(backgroundColor:Colors.black), child:const Text('1- بدور على ركنة (SEARCH)', style:TextStyle(color:Colors.white)))), const SizedBox(height:10), SizedBox(width:double.infinity, height:56, child:OutlinedButton(onPressed:(){ setState(()=>points+=5); _loadSpots(); }, child:const Text('2- طالع من ركنتي (PUBLISH +5)')))]):Row(children:[ Expanded(child:ElevatedButton(onPressed:_confirmPark, style:ElevatedButton.styleFrom(backgroundColor:Colors.green), child:const Text('ركنت خلاص (COMPLETED)', style:TextStyle(color:Colors.white)))), const SizedBox(width:10), Expanded(child:OutlinedButton(onPressed:(){ timer?.cancel(); setState(()=>reservedId=null); }, child:const Text('الغاء'))) ]))) ])); }
-          }
-          DART
+          class Rakna extends StatefulWidget{const Rakna({super.key}); @override State<Rakna> createState()=> _R();}
+          class _R extends State<Rakna>{
+            LatLng my=LatLng(30.0626,31.2194); List<Marker> mk=[]; int pts=12;
+            @override void initState(){super.initState(); _seed();}
+            void _seed(){ var r=Random(); mk=[Marker(point: my, child: const Icon(Icons.my_location, color: Colors.blue, size: 40))]; for(int i=0;i<4;i++){ var p=LatLng(my.latitude+(r.nextDouble()-0.5)*0.01, my.longitude+(r.nextDouble()-0.5)*0.01); mk.add(Marker(point: p, child: const Icon(Icons.local_parking, color: Colors.green, size: 45))); } setState((){}); }
+            @override Widget build(BuildContext c){ return Scaffold(appBar: AppBar(title: Text('ركنة - $pts نقطة'), backgroundColor: Colors.black, foregroundColor: Colors.white), body: FlutterMap(options: MapOptions(initialCenter: my, initialZoom: 15), children: [TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'), MarkerLayer(markers: mk)]), floatingActionButton: FloatingActionButton.extended(onPressed: _seed, backgroundColor: Colors.black, icon: const Icon(Icons.search, color: Colors.white), label: const Text('بدور على ركنة', style: TextStyle(color: Colors.white)))); }
+          }" > lib/main.dart
           flutter pub get
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: rakna-apk
+          name: rakna-apk-FREE
           path: build/app/outputs/flutter-apk/app-release.apk
