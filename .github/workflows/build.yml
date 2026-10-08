@@ -13,10 +13,12 @@ jobs:
         with:
           flutter-version: '3.22.2'
           channel: 'stable'
-      - run: |
+      - name: Fix build
+        run: |
           rm -rf android
           flutter create -t app . --org com.rakna.app --project-name rakna --platforms android --overwrite
-          echo "name: rakna
+          cat > pubspec.yaml << 'EOF'
+          name: rakna
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -24,22 +26,11 @@ jobs:
           dependencies:
             flutter:
               sdk: flutter
-            flutter_map: 6.1.0
-            latlong2: 0.8.1
+            flutter_map: ^7.0.2
+            latlong2: ^0.9.1
           flutter:
-            uses-material-design: true" > pubspec.yaml
-          echo "import 'package:flutter/material.dart';
-          import 'package:flutter_map/flutter_map.dart';
-          import 'package:latlong2/latlong.dart';
-          import 'dart:async'; import 'dart:math';
-          void main()=>runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: Rakna()));
-          class Rakna extends StatefulWidget{const Rakna({super.key}); @override State<Rakna> createState()=> _R();}
-          class _R extends State<Rakna>{
-            LatLng my=LatLng(30.0626,31.2194); List<Marker> mk=[]; int pts=12;
-            @override void initState(){super.initState(); _seed();}
-            void _seed(){ var r=Random(); mk=[Marker(point: my, child: const Icon(Icons.my_location, color: Colors.blue, size: 40))]; for(int i=0;i<4;i++){ var p=LatLng(my.latitude+(r.nextDouble()-0.5)*0.01, my.longitude+(r.nextDouble()-0.5)*0.01); mk.add(Marker(point: p, child: const Icon(Icons.local_parking, color: Colors.green, size: 45))); } setState((){}); }
-            @override Widget build(BuildContext c){ return Scaffold(appBar: AppBar(title: Text('ركنة - $pts نقطة'), backgroundColor: Colors.black, foregroundColor: Colors.white), body: FlutterMap(options: MapOptions(initialCenter: my, initialZoom: 15), children: [TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'), MarkerLayer(markers: mk)]), floatingActionButton: FloatingActionButton.extended(onPressed: _seed, backgroundColor: Colors.black, icon: const Icon(Icons.search, color: Colors.white), label: const Text('بدور على ركنة', style: TextStyle(color: Colors.white)))); }
-          }" > lib/main.dart
+            uses-material-design: true
+          EOF
           flutter pub get
           flutter build apk --release
       - uses: actions/upload-artifact@v4
